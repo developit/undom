@@ -23,6 +23,21 @@ Via npm:
 ---
 
 
+## Require Hook
+
+In CommonJS environments, simply import `undom/register` to patch the global object with a singleton Document.
+
+```js
+require('undom/register');
+
+// now you have a DOM.
+document.createElement('div');
+```
+
+
+---
+
+
 ## Usage
 
 ```js
