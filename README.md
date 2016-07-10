@@ -60,3 +60,50 @@ let foo = document.createElement('foo');
 foo.appendChild(document.createTextNode('Hello, World!'));
 document.body.appendChild(foo);
 ```
+
+
+---
+
+
+## Recipe: Serialize to HTML
+
+One task `undom` doesn't handle for you by default is HTML serialization.  A proper implementation of this would be cumbersome to maintain and would rely heavily on getters and setters, which limits browser support.  Below is a simple recipe for serializing an `undom` Element (Document, etc) to HTML.
+
+
+#### Small & in ES2015:
+
+```js
+Element.prototype.toString = el => this.nodeType===3 ? enc(this.textContent) : (
+	'<'+this.nodeName.toLowerCase() + this.attributes.map(attr).join('') + '>' +
+	this.childNodes.map(serialize).join('') + '</'+this.nodeName.toLowerCase()+'>'
+);
+let attr = a => ` ${a.name}="${enc(a.value)}"`;
+let enc = s => s.replace(/[&'"<>]/g, a => `&#${a};`);
+```
+
+
+#### ES3 Version
+
+This also does pretty-printing.
+
+```js
+function serialize(el) {
+	if (el.nodeType===3) return el.textContent;
+	var name = String(el.nodeName).toLowerCase(),
+		str = '<'+name,
+		c, i;
+	for (i=0; i<el.attributes.length; i++) {
+		str += ' '+el.attributes[i].name+'="'+el.attributes[i].value+'"';
+	}
+	str += '>';
+	for (i=0; i<el.childNodes.length; i++) {
+		c = serialize(el.childNodes[i]);
+		if (c) str += '\n\t'+c.replace(/\n/g,'\n\t');
+	}
+	return str + (c?'\n':'') + '</'+name+'>';
+}
+
+function enc(s) {
+	return s.replace(/[&'"<>]/g, function(a){ return `&#${a};` });
+}
+```
