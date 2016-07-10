@@ -13,6 +13,16 @@
 ---
 
 
+## Project Goals
+
+Undom aims to find a sweet spot between size/performance and utility. The goal is to provide the simplest possible implementation of a DOM Document, such that libraries relying on the DOM can run in places where there isn't one available.
+
+The intent to keep things as simple as possible means undom lacks some DOM features like HTML parsing & serialization, Web Components, etc. These features can be added through additional libraries.
+
+
+---
+
+
 ## Installation
 
 Via npm:
