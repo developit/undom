@@ -1,3 +1,10 @@
+import {
+	assign,
+	toLower,
+	splice,
+	findWhere,
+	createAttributeFilter
+} from './util';
 
 /*
 const NODE_TYPES = {
@@ -17,31 +24,6 @@ const NODE_TYPES = {
  *	@returns {Document} document
  */
 export default function undom() {
-	function assign(obj, props) {
-		for (let i in props) obj[i] = props[i];
-	}
-
-	function toLower(str) {
-		return String(str).toLowerCase();
-	}
-
-	function createAttributeFilter(ns, name) {
-		return o => o.ns===ns && o.name===toLower(name);
-	}
-
-	function splice(arr, item, add) {
-		let i = arr ? findWhere(arr, item, true) : -1;
-		if (~i) add ? arr.splice(i, 0, add) : arr.splice(i, 1);
-		return i;
-	}
-
-	function findWhere(arr, fn, returnIndex) {
-		let i = arr.length;
-		while (i--) if (typeof fn==='function' ? fn(arr[i]) : arr[i]===fn) break;
-		return returnIndex ? i : arr[i];
-	}
-
-
 	class Node {
 		constructor(nodeType, nodeName) {
 			this.nodeType = nodeType;
