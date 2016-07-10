@@ -39,9 +39,16 @@ export default function undom() {
 		insertBefore(child, ref) {
 			child.remove();
 			let i = splice(this.childNodes, ref, child);
-			if (child.nodeType===1) {
-				while (i<this.childNodes.length && (ref = this.childNodes[i]).nodeType!==1) i++;
+			if (!ref) this.appendChild(child);
+			else if (~i && child.nodeType===1) {
+				while (i<this.childNodes.length && (ref = this.childNodes[i]).nodeType!==1 || ref===child) i++;
 				if (ref) splice(this.children, ref, child);
+			}
+		}
+		replaceChild(child, ref) {
+			if (ref.parentNode===this) {
+				this.insertBefore(child, ref);
+				ref.remove();
 			}
 		}
 		removeChild(child) {

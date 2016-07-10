@@ -74,6 +74,27 @@ describe('undom', () => {
 			});
 		});
 
+		describe('#replaceChild()', () => {
+			it('should replace a child', () => {
+				let parent = document.createElement('div');
+				let child1 = document.createElement('child1');
+				let child2 = document.createElement('child2');
+				let child3 = document.createElement('child3');
+				let child4 = document.createElement('child4');
+				parent.appendChild(child1);
+				parent.appendChild(child2);
+				parent.appendChild(child3);
+
+				expect(parent).to.have.property('childNodes').eql([child1, child2, child3]);
+				expect(parent).to.have.property('children').eql([child1, child2, child3]);
+
+				parent.replaceChild(child4, child2);
+
+				expect(parent).to.have.property('childNodes').eql([child1, child4, child3]);
+				expect(parent).to.have.property('children').eql([child1, child4, child3]);
+			});
+		});
+
 		describe('#setAttribute()', () => {
 			it('should set a given named attribute', () => {
 				let el = document.createElement('div');
