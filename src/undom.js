@@ -28,8 +28,10 @@ export default function undom() {
 			this.childNodes = [];
 		}
 		appendChild(child) {
-			if (this.children && child.nodeType===1) this.children.push(child);
+			child.remove();
+			child.parentNode = this;
 			this.childNodes.push(child);
+			if (this.children && child.nodeType===1) this.children.push(child);
 		}
 		insertBefore(child, ref) {
 			let i = this.childNodes.indexOf(ref);
@@ -48,6 +50,8 @@ export default function undom() {
 				i = this.children.indexOf(child);
 				if (~i) this.children.splice(this.children.indexOf(child), 1);
 			}
+		remove() {
+			if (this.parentNode) this.parentNode.removeChild(this);
 		}
 	}
 
