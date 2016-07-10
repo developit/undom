@@ -61,7 +61,7 @@ export default function undom() {
 	}
 
 
-	class TextNode extends Node {
+	class Text extends Node {
 		constructor(text) {
 			super(3, '#text');					// TEXT_NODE
 			this.textContent = this.nodeValue = text;
@@ -159,13 +159,13 @@ export default function undom() {
 
 
 	function createTextNode(text) {
-		return new TextNode(text);
+		return new Text(text);
 	}
 
 
 	function createDocument() {
 		let document = new Document();
-		assign(document, document.defaultView = { document, Document, Node, TextNode, Element, Event });
+		assign(document, document.defaultView = { document, Document, Node, Text, Element, Event });
 		assign(document, { documentElement:document, createElement, createElementNS, createTextNode });
 		document.appendChild(document.body = createElement('body'));
 		return document;
