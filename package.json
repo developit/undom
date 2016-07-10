@@ -1,7 +1,7 @@
 {
   "name": "undom",
   "amdName": "undom",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Minimally viable DOM Document implementation.",
   "main": "dist/undom.js",
   "minified:main": "dist/undom.min.js",
