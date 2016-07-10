@@ -10,6 +10,9 @@
 > `1kb` and works in Node and browsers.
 
 
+[**JSFiddle Demo:**](https://jsfiddle.net/developit/4qv3v6r3/) Rendering [preact](https://github.com/developit/preact/) components into an undom Document.
+
+
 ---
 
 
