@@ -21,6 +21,27 @@ export default function undom() {
 		for (let i in props) obj[i] = props[i];
 	}
 
+	function toLower(str) {
+		return String(str).toLowerCase();
+	}
+
+	function createAttributeFilter(ns, name) {
+		return o => o.ns===ns && o.name===toLower(name);
+	}
+
+	function splice(arr, item, add) {
+		let i = arr ? findWhere(arr, item, true) : -1;
+		if (~i) add ? arr.splice(i, 0, add) : arr.splice(i, 1);
+		return i;
+	}
+
+	function findWhere(arr, fn, returnIndex) {
+		let i = arr.length;
+		while (i--) if (typeof fn==='function' ? fn(arr[i]) : arr[i]===fn) break;
+		return returnIndex ? i : arr[i];
+	}
+
+
 	class Node {
 		constructor(nodeType, nodeName) {
 			this.nodeType = nodeType;
@@ -34,22 +55,17 @@ export default function undom() {
 			if (this.children && child.nodeType===1) this.children.push(child);
 		}
 		insertBefore(child, ref) {
-			let i = this.childNodes.indexOf(ref);
-			if (~i) this.childNodes.splice(i, 0, child);
-			if (this.children && child.nodeType===1) {
-				while (i<this.childNodes.length && this.childNodes[i].nodeType!==1) i++;
-				if (i<this.childNodes.length) {
-					this.children.splice(this.children.indexOf(this.childNodes[i]), 0, child);
-				}
+			child.remove();
+			let i = splice(this.childNodes, ref, child);
+			if (child.nodeType===1) {
+				while (i<this.childNodes.length && (ref = this.childNodes[i]).nodeType!==1) i++;
+				if (ref) splice(this.children, ref, child);
 			}
 		}
 		removeChild(child) {
-			let i = this.childNodes.indexOf(child);
-			if (~i) this.childNodes.splice(i, 1);
-			if (this.children && child.nodeType===1) {
-				i = this.children.indexOf(child);
-				if (~i) this.children.splice(this.children.indexOf(child), 1);
-			}
+			splice(this.childNodes, child);
+			if (child.nodeType===1) splice(this.children, child);
+		}
 		remove() {
 			if (this.parentNode) this.parentNode.removeChild(this);
 		}
@@ -80,21 +96,17 @@ export default function undom() {
 			this.removeAttributeNS(null, key);
 		}
 		setAttributeNS(ns, name, value) {
-			name = String(name).toLowerCase();
-			value = String(value);
-			let attr = this.attributes.filter( o => o.ns===ns && o.name===name )[0];
-			if (!attr) this.attributes.push({ ns, name, value });
-			else attr.value = value;
+			let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
+			if (!attr) this.attributes.push(attr = { ns, name });
+			attr.value = String(value);
 		}
 		getAttributeNS(ns, name) {
-			let attr = this.attributes.filter( o => o.ns===ns && o.name===name )[0];
+			let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
 			return attr && attr.value;
 		}
 		removeAttributeNS(ns, name) {
-			for (let i=this.attributes.length; i--; ) {
-				if (this.attributes[i].ns===ns && this.attributes[i].name===name) {
-					this.attributes.splice(i, 1);
-					return;
+			splice(this.attributes, createAttributeFilter(ns, name));
+		}
 				}
 			}
 		}
