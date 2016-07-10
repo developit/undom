@@ -1,5 +1,8 @@
 import undom from '../src/undom';
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import { spy } from 'sinon';
+import sinonChai from 'sinon-chai';
+chai.use(sinonChai);
 
 describe('undom', () => {
 	it('should create a Document', () => {
@@ -104,6 +107,125 @@ describe('undom', () => {
 			it('should return undefined for missing attribute', () => {
 				let el = document.createElement('div');
 				expect(el.getAttribute('a')).to.equal(undefined);
+			});
+		});
+
+		describe('#addEventListener', () => {
+			it('should append listener to event list', () => {
+				let el = document.createElement('div');
+
+				expect(el.__handlers).to.eql({});
+
+				let fn = () => {};
+				el.addEventListener('type', fn);
+				expect(el.__handlers).to.eql({ type: [fn] });
+			});
+
+			it('should allow duplicates', () => {
+				let el = document.createElement('div');
+				let fn = () => {};
+				el.addEventListener('type', fn);
+				el.addEventListener('type', fn);
+				expect(el.__handlers).to.eql({ type: [fn, fn] });
+			});
+
+			it('should normalize type', () => {
+				let el = document.createElement('div');
+				let fn = () => {};
+				el.addEventListener('TYPE', fn);
+				el.addEventListener('TyPe', fn);
+				el.addEventListener('type', fn);
+				expect(el.__handlers).to.eql({ type: [fn, fn, fn] });
+			});
+		});
+
+		describe('#removeEventListener', () => {
+			it('should remove existing listeners', () => {
+				let el = document.createElement('div');
+				let fn = () => {};
+				el.addEventListener('type', fn);
+
+				el.removeEventListener('type', fn);
+				expect(el.__handlers).to.eql({ type: [] });
+			});
+
+			it('should normalize type', () => {
+				let el = document.createElement('div');
+				let fn = () => {};
+				el.addEventListener('type', fn);
+				el.addEventListener('type', fn);
+				el.addEventListener('type', fn);
+
+				el.removeEventListener('TYPE', fn);
+				el.removeEventListener('TyPe', fn);
+				el.removeEventListener('type', fn);
+				expect(el.__handlers).to.eql({ type: [] });
+			});
+
+			it('should remove only one listener at a time', () => {
+				let el = document.createElement('div');
+				let fn = () => {};
+				el.addEventListener('type', fn);
+				el.addEventListener('type', fn);
+
+				el.removeEventListener('type', fn);
+				expect(el.__handlers).to.eql({ type: [fn] });
+
+				el.removeEventListener('type', fn);
+				expect(el.__handlers).to.eql({ type: [] });
+			});
+		});
+
+		describe('#dispatchEvent()', () => {
+			it('should invoke matched listener', () => {
+				let event = { type:'foo', cancelable:true, bubbles:true };
+				let el = document.createElement('div');
+				let fn = spy();
+				let fn2 = spy();
+				el.addEventListener('foo', fn);
+				el.addEventListener('bar', fn2);
+				el.dispatchEvent(event);
+
+				expect(fn).to.have.been.calledOnce;
+				expect(fn2).not.to.have.been.called;
+			});
+
+			it('should invoke multiple listeners', () => {
+				let event = { type:'foo', cancelable:true, bubbles:true };
+				let el = document.createElement('div');
+				let fn = spy();
+				el.addEventListener('foo', fn);
+				el.addEventListener('foo', fn);
+				el.addEventListener('foo', fn);
+				el.dispatchEvent(event);
+
+				expect(fn).to.have.been.calledThrice;
+			});
+
+			it('should bubble if enabled', () => {
+				let event = { type:'foo', cancelable:true, bubbles:true };
+				let child = document.createElement('div');
+				let parent = document.createElement('div');
+				parent.appendChild(child);
+
+				child.addEventListener('foo', child.fn = spy());
+				parent.addEventListener('foo', parent.fn = spy());
+				child.dispatchEvent(event);
+
+				expect(child.fn).to.have.been.calledOnce;
+				expect(parent.fn).to.have.been.calledOnce;
+
+				child.fn.reset();
+				parent.fn.reset();
+				parent.dispatchEvent(event);
+				expect(child.fn).not.to.have.been.called;
+
+				child.fn.reset();
+				parent.fn.reset();
+				event.bubbles = false;
+				child.addEventListener('foo', e => e._stop = true );
+				child.dispatchEvent(event);
+				expect(parent.fn).not.to.have.been.called;
 			});
 		});
 	});
