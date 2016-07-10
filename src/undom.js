@@ -1,19 +1,22 @@
 
+/*
+const NODE_TYPES = {
+	ELEMENT_NODE: 1,
+	ATTRIBUTE_NODE: 2,
+	TEXT_NODE: 3,
+	CDATA_SECTION_NODE: 4,
+	ENTITY_REFERENCE_NODE: 5,
+	COMMENT_NODE: 6,
+	PROCESSING_INSTRUCTION_NODE: 7,
+	DOCUMENT_NODE: 9
+};
+*/
+
+
 /** Create a minimally viable DOM Document
  *	@returns {Document} document
  */
 export default function undom() {
-	const NODE_TYPES = {
-		ELEMENT_NODE: 1,
-		ATTRIBUTE_NODE: 2,
-		TEXT_NODE: 3,
-		CDATA_SECTION_NODE: 4,
-		ENTITY_REFERENCE_NODE: 5,
-		COMMENT_NODE: 6,
-		PROCESSING_INSTRUCTION_NODE: 7,
-		DOCUMENT_NODE: 9
-	};
-
 	function assign(obj, props) {
 		for (let i in props) obj[i] = props[i];
 	}
@@ -47,13 +50,11 @@ export default function undom() {
 			}
 		}
 	}
-	assign(Node, NODE_TYPES);
-	assign(Node.prototype, NODE_TYPES);
 
 
 	class TextNode extends Node {
 		constructor(text) {
-			super(3, '#text');			// NODE_TYPES.TEXT_NODE
+			super(3, '#text');					// TEXT_NODE
 			this.textContent = this.nodeValue = text;
 		}
 	}
@@ -61,7 +62,7 @@ export default function undom() {
 
 	class Element extends Node {
 		constructor(nodeType, nodeName) {
-			super(nodeType || 1, nodeName);		// NODE_TYPES.ELEMENT_NODE
+			super(nodeType || 1, nodeName);		// ELEMENT_NODE
 			this.attributes = [];
 			this.children = [];
 		}
