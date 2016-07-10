@@ -32,6 +32,45 @@ describe('undom', () => {
 	describe('Element', () => {
 		let document = undom();
 
+		describe('#appendChild', () => {
+			it('should set parentNode', () => {
+				let child = document.createElement('span');
+				let parent = document.createElement('div');
+				parent.appendChild(child);
+				expect(child).to.have.property('parentNode', parent);
+			});
+
+			it('should insert into .children / .childNodes', () => {
+				let child = document.createElement('span');
+				let parent = document.createElement('div');
+
+				parent.appendChild(child);
+				expect(parent).to.have.property('childNodes').that.deep.equals([child]);
+				expect(parent).to.have.property('children').that.deep.equals([child]);
+				expect(child).to.have.property('parentNode', parent);
+
+				parent.appendChild(child);
+				expect(parent, 're-append').to.have.property('childNodes').that.deep.equals([child]);
+				expect(parent, 're-append').to.have.property('children').that.deep.equals([child]);
+				expect(child, 're-append').to.have.property('parentNode', parent);
+			});
+
+			it('should remove child from any current parentNode', () => {
+				let child = document.createElement('span');
+				let parent1 = document.createElement('div');
+				let parent2 = document.createElement('div');
+
+				parent1.appendChild(child);
+				expect(parent1.childNodes).to.eql([child]);
+				expect(child).to.have.property('parentNode', parent1);
+
+				parent2.appendChild(child);
+				expect(child, 'switch parentNode').to.have.property('parentNode', parent2);
+				expect(parent1.childNodes, 'old parent').to.eql([]);
+				expect(parent2.childNodes, 'new parent').to.eql([child]);
+			});
+		});
+
 		describe('#setAttribute()', () => {
 			it('should set a given named attribute', () => {
 				let el = document.createElement('div');
