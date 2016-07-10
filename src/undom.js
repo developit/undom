@@ -94,11 +94,10 @@ export default function undom() {
 		}
 
 		addEventListener(type, handler) {
-			type = toLower(type);
-			(this.__handlers[type] || (this.__handlers[type] = [])).push(handler);
+			(this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
 		}
 		removeEventListener(type, handler) {
-			splice(this.__handlers[toLower(type)], handler);
+			splice(this.__handlers[toLower(type)], handler, 0, true);
 		}
 		dispatchEvent(event) {
 			let t = this,
