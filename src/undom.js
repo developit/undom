@@ -158,12 +158,9 @@ export default function undom() {
 
 	function createDocument() {
 		let document = new Document();
-		assign(document, {
-			Document, Node, TextNode, Element, Event,
-			createElement, createElementNS, createTextNode
-		});
-		document.documentElement = document;
-		document.appendChild(document.body = document.createElement('body'));
+		assign(document, document.defaultView = { document, Document, Node, TextNode, Element, Event });
+		assign(document, { documentElement:document, createElement, createElementNS, createTextNode });
+		document.appendChild(document.body = createElement('body'));
 		return document;
 	}
 
