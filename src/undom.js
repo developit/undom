@@ -85,7 +85,9 @@ export default function undom() {
 			super(nodeType || 1, nodeName);		// ELEMENT_NODE
 			this.attributes = [];
 			this.children = [];
+			this.__handlers = {};
 		}
+
 		setAttribute(key, value) {
 			this.setAttributeNS(null, key, value);
 		}
@@ -95,6 +97,7 @@ export default function undom() {
 		removeAttribute(key) {
 			this.removeAttributeNS(null, key);
 		}
+
 		setAttributeNS(ns, name, value) {
 			let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
 			if (!attr) this.attributes.push(attr = { ns, name });
@@ -107,8 +110,27 @@ export default function undom() {
 		removeAttributeNS(ns, name) {
 			splice(this.attributes, createAttributeFilter(ns, name));
 		}
+
+		addEventListener(type, handler) {
+			type = toLower(type);
+			(this.__handlers[type] || (this.__handlers[type] = [])).push(handler);
+		}
+		removeEventListener(type, handler) {
+			splice(this.__handlers[toLower(type)], handler);
+		}
+		dispatchEvent(event) {
+			let t = this,
+				c = event.cancelable;
+			event.currentTarget = t;
+			do {
+				event.path.push(event.target=t);
+				let l = t.__handlers[toLower(event.type)];
+				if (t) for (let i=l.length; i--; ) {
+					if (l[i](event)===false && c) return false;
+					if (event._end && c) break;
 				}
-			}
+			} while (event.bubbles && !(c && event._stop) && (t=t.parentNode));
+			return !event.defaultPrevented;
 		}
 	}
 
@@ -120,9 +142,29 @@ export default function undom() {
 	}
 
 
+	class Event {
+		constructor(type, opts) {
+			this.type = type;
+			this.bubbles = !!opts.bubbles;
+			this.cancelable = !!opts.cancelable;
+		}
+
+		stopPropagation() {
+			this._stop = true;
+		}
+		stopImmediatePropagation() {
+			this._end = this._stop = true;
+		}
+		preventDefault() {
+			this.defaultPrevented = true;
+		}
+	}
+
+
 	function createElement(type) {
 		return new Element(null, String(type).toUpperCase());
 	}
+
 
 	function createElementNS(ns, type) {
 		let element = createElement(type);
@@ -130,20 +172,23 @@ export default function undom() {
 		return element;
 	}
 
+
 	function createTextNode(text) {
 		return new TextNode(text);
 	}
 
+
 	function createDocument() {
 		let document = new Document();
 		assign(document, {
-			Document, Node, TextNode, Element,
+			Document, Node, TextNode, Element, Event,
 			createElement, createElementNS, createTextNode
 		});
 		document.documentElement = document;
 		document.appendChild(document.body = document.createElement('body'));
 		return document;
 	}
+
 
 	return createDocument();
 }
