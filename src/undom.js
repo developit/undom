@@ -100,17 +100,15 @@ export default function undom() {
 			splice(this.__handlers[toLower(type)], handler, 0, true);
 		}
 		dispatchEvent(event) {
-			let t = this,
-				c = event.cancelable;
-			event.currentTarget = t;
+			let t = event.currentTarget = this,
+				c = event.cancelable,
+				l, i;
 			do {
-				event.path.push(event.target=t);
-				let l = t.__handlers[toLower(event.type)];
-				if (t) for (let i=l.length; i--; ) {
-					if (l[i](event)===false && c) return false;
-					if (event._end && c) break;
+				l = t.__handlers[toLower(event.type)];
+				if (l) for (i=l.length; i--; ) {
+					if ((l[i](event)===false || event._end) && c) break;
 				}
-			} while (event.bubbles && !(c && event._stop) && (t=t.parentNode));
+			} while (event.bubbles && !(c && event._stop) && (event.target=t=t.parentNode));
 			return !event.defaultPrevented;
 		}
 	}
@@ -129,7 +127,6 @@ export default function undom() {
 			this.bubbles = !!opts.bubbles;
 			this.cancelable = !!opts.cancelable;
 		}
-
 		stopPropagation() {
 			this._stop = true;
 		}
