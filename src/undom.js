@@ -25,9 +25,8 @@ const NODE_TYPES = {
  */
 export default function undom() {
 
-	function sibling(node, offset) {
-		let p = node.parentNode;
-		if (p) return p.childNodes[findWhere(p.childNodes, node, true) + offset];
+	function isElement(node) {
+		return node.nodeType===1;
 	}
 
 	class Node {
@@ -37,25 +36,27 @@ export default function undom() {
 			this.childNodes = [];
 		}
 		get nextSibling() {
-			return sibling(this, 1);
+			let p = this.parentNode;
+			if (p) return p.childNodes[findWhere(p.childNodes, this, true) + 1];
 		}
 		get previousSibling() {
-			return sibling(this, -1);
+			let p = this.parentNode;
+			if (p) return p.childNodes[findWhere(p.childNodes, this, true) - 1];
+		}
+		get firstChild() {
+			return this.childNodes[0];
+		}
+		get lastChild() {
+			return this.childNodes[this.childNodes.length-1];
 		}
 		appendChild(child) {
-			child.remove();
-			child.parentNode = this;
-			this.childNodes.push(child);
-			if (this.children && child.nodeType===1) this.children.push(child);
+			this.insertBefore(child);
 		}
 		insertBefore(child, ref) {
 			child.remove();
-			let i = splice(this.childNodes, ref, child);
-			if (!ref) this.appendChild(child);
-			else if (~i && child.nodeType===1) {
-				while (i<this.childNodes.length && (ref = this.childNodes[i]).nodeType!==1 || ref===child) i++;
-				if (ref) splice(this.children, ref, child);
-			}
+			child.parentNode = this;
+			if (!ref) this.childNodes.push(child);
+			else splice(this.childNodes, ref, child);
 		}
 		replaceChild(child, ref) {
 			if (ref.parentNode===this) {
@@ -65,7 +66,6 @@ export default function undom() {
 		}
 		removeChild(child) {
 			splice(this.childNodes, child);
-			if (child.nodeType===1) splice(this.children, child);
 		}
 		remove() {
 			if (this.parentNode) this.parentNode.removeChild(this);
@@ -76,7 +76,13 @@ export default function undom() {
 	class Text extends Node {
 		constructor(text) {
 			super(3, '#text');					// TEXT_NODE
-			this.textContent = this.nodeValue = text;
+			this.nodeValue = text;
+		}
+		set textContent(text) {
+			this.nodeValue = text;
+		}
+		get textContent() {
+			return this.nodeValue;
 		}
 	}
 
@@ -85,8 +91,11 @@ export default function undom() {
 		constructor(nodeType, nodeName) {
 			super(nodeType || 1, nodeName);		// ELEMENT_NODE
 			this.attributes = [];
-			this.children = [];
 			this.__handlers = {};
+		}
+
+		get children() {
+			return this.childNodes.filter(isElement);
 		}
 
 		setAttribute(key, value) {
