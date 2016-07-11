@@ -21,3 +21,6 @@ export function findWhere(arr, fn, returnIndex, byValueOnly) {
 	while (i--) if (typeof fn==='function' && !byValueOnly ? fn(arr[i]) : arr[i]===fn) break;
 	return returnIndex ? i : arr[i];
 }
+
+let resolved = typeof Promise!=='undefined' && Promise.resolve();
+export const setImmediate = resolved ? (f => { resolved.then(f); }) : setTimeout;
