@@ -24,11 +24,23 @@ const NODE_TYPES = {
  *	@returns {Document} document
  */
 export default function undom() {
+
+	function sibling(node, offset) {
+		let p = node.parentNode;
+		if (p) return p.childNodes[findWhere(p.childNodes, node, true) + offset];
+	}
+
 	class Node {
 		constructor(nodeType, nodeName) {
 			this.nodeType = nodeType;
 			this.nodeName = nodeName;
 			this.childNodes = [];
+		}
+		get nextSibling() {
+			return sibling(this, 1);
+		}
+		get previousSibling() {
+			return sibling(this, -1);
 		}
 		appendChild(child) {
 			child.remove();
