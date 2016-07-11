@@ -7,7 +7,7 @@ export function toLower(str) {
 }
 
 export function createAttributeFilter(ns, name) {
-	return o => o.ns===ns && o.name===toLower(name);
+	return o => o.ns===ns && toLower(o.name)===toLower(name);
 }
 
 export function splice(arr, item, add, byValueOnly) {
