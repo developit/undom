@@ -7,7 +7,7 @@
 
 > Need a bare-bones HTML DOM where you don't have one? If you want the DOM but not a parser, this might be for you.
 >
-> `1kb` and works in Node and browsers.
+> `1kB` and works in Node and browsers.
 
 
 [**JSFiddle Demo:**](https://jsfiddle.net/developit/4qv3v6r3/) Rendering [preact](https://github.com/developit/preact/) components into an undom Document.
