@@ -5,12 +5,14 @@
 
 ### **Minimally viable DOM Document implementation**
 
-> Need a bare-bones HTML DOM where you don't have one? If you want the DOM but not a parser, this might be for you.
+> A bare-bones HTML DOM in a box. If you want the DOM but not a parser, this might be for you.
 >
-> `1kB` and works in Node and browsers.
+> `1kB`, works in Node and browsers, plugins coming soon!
 
 
 [**JSFiddle Demo:**](https://jsfiddle.net/developit/4qv3v6r3/) Rendering [preact](https://github.com/developit/preact/) components into an undom Document.
+
+[![preview](https://i.gyazo.com/7fcca9dd3e562b076293ef2cf3979d23.gif)](https://jsfiddle.net/developit/4qv3v6r3/)
 
 
 ---
