@@ -134,7 +134,7 @@ export default function undom() {
 			do {
 				l = t.__handlers[toLower(event.type)];
 				if (l) for (i=l.length; i--; ) {
-					if ((l[i](event)===false || event._end) && c) break;
+					if ((l[i].call(t, event)===false || event._end) && c) break;
 				}
 			} while (event.bubbles && !(c && event._stop) && (event.target=t=t.parentNode));
 			return !event.defaultPrevented;
