@@ -132,7 +132,7 @@ export default function undom() {
 				c = event.cancelable,
 				l, i;
 			do {
-				l = t.__handlers[toLower(event.type)];
+				l = t.__handlers && t.__handlers[toLower(event.type)];
 				if (l) for (i=l.length; i--; ) {
 					if ((l[i].call(t, event)===false || event._end) && c) break;
 				}
