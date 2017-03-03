@@ -92,6 +92,15 @@ export default function undom() {
 			super(nodeType || 1, nodeName);		// ELEMENT_NODE
 			this.attributes = [];
 			this.__handlers = {};
+			this.style = {};
+			Object.defineProperty(this, 'className', {
+				set: val => { this.setAttribute('class', val); },
+				get: () => this.getAttribute('class')
+			});
+			Object.defineProperty(this.style, 'cssText', {
+				set: val => { this.setAttribute('style', val); },
+				get: () => this.getAttribute('style')
+			});
 		}
 
 		get children() {
