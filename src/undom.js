@@ -101,10 +101,26 @@ export default function undom() {
 				set: val => { this.setAttribute('style', val); },
 				get: () => this.getAttribute('style')
 			});
+			Object.defineProperty(this, 'innerHTML', {
+				set: val => {
+					while (this.firstChild) {
+						this.removeChild(this.firstChild);
+					}
+					this._innerHTML = val;
+				},
+				get: () => { return this._innerHTML; }
+			});
 		}
 
 		get children() {
 			return this.childNodes.filter(isElement);
+		}
+
+		insertBefore(child, ref) {
+			super.insertBefore(child, ref);
+			if (this._innerHTML) {
+				this._innerHTML = '';
+			}
 		}
 
 		setAttribute(key, value) {
