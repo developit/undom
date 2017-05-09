@@ -1,5 +1,7 @@
 # undom
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/developit/undom.svg)](https://greenkeeper.io/)
+
 [![NPM](https://img.shields.io/npm/v/undom.svg?style=flat)](https://www.npmjs.org/package/undom)
 [![travis-ci](https://travis-ci.org/developit/undom.svg?branch=master)](https://travis-ci.org/developit/undom)
 
