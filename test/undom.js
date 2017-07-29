@@ -10,6 +10,22 @@ describe('undom', () => {
 		expect(document).to.be.an.instanceOf(document.Document);
 	});
 
+	it('should create a valid Document tree', () => {
+		let document = undom();
+		let html = document.documentElement;
+
+		expect(html).to.be.an.instanceOf(document.Element);
+		expect(html).to.have.property('nodeName', 'HTML');
+
+		expect(document.head).to.be.an.instanceOf(document.Element);
+		expect(document.head).to.have.property('nodeName', 'HEAD');
+		expect(document.head).to.have.property('parentNode', html);
+
+		expect(document.body).to.be.an.instanceOf(document.Element);
+		expect(document.body).to.have.property('nodeName', 'BODY');
+		expect(document.body).to.have.property('parentNode', html);
+	});
+
 	describe('createElement()', () => {
 		let document = undom();
 
