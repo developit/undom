@@ -51,6 +51,7 @@ export default function undom() {
 		}
 		appendChild(child) {
 			this.insertBefore(child);
+			return child;
 		}
 		insertBefore(child, ref) {
 			child.remove();
@@ -62,10 +63,12 @@ export default function undom() {
 			if (ref.parentNode===this) {
 				this.insertBefore(child, ref);
 				ref.remove();
+				return ref;
 			}
 		}
 		removeChild(child) {
 			splice(this.childNodes, child);
+			return child;
 		}
 		remove() {
 			if (this.parentNode) this.parentNode.removeChild(this);
