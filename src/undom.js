@@ -56,7 +56,7 @@ export default function undom() {
 			child.remove();
 			child.parentNode = this;
 			!ref ? this.childNodes.push(child) : splice(this.childNodes, ref, child);
-      return child;
+			return child;
 		}
 		replaceChild(child, ref) {
 			if (ref.parentNode===this) {
