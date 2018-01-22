@@ -14,11 +14,6 @@
 
 [![preview](https://i.gyazo.com/7fcca9dd3e562b076293ef2cf3979d23.gif)](https://jsfiddle.net/developit/4qv3v6r3/)
 
-
-<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/WbARjbDRQz5y3N6VBEMPU4LW/developit/undom'>
-  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/WbARjbDRQz5y3N6VBEMPU4LW/developit/undom.svg' />
-</a>
-
 ---
 
 
