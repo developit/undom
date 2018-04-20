@@ -4,3 +4,4 @@ node_js:
 before_install:
   - npm i -g npm@latest
   - npm ci
+  - npm install npm-run-all
