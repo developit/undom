@@ -3,5 +3,5 @@ node_js:
   - stable
 before_install:
   - npm i -g npm@latest
+install:
   - npm ci
-  - npm install npm-run-all
