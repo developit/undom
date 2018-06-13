@@ -240,7 +240,7 @@ describe('undom', () => {
 			});
 
 			it('should bubble if enabled', () => {
-				let event = { type:'foo', cancelable:true, bubbles:true };
+				let event = new document.defaultView.Event('foo', { cancelable:true, bubbles:true });
 				let child = document.createElement('div');
 				let parent = document.createElement('div');
 				parent.appendChild(child);
@@ -263,6 +263,32 @@ describe('undom', () => {
 				child.addEventListener('foo', e => e._stop = true );
 				child.dispatchEvent(event);
 				expect(parent.fn).not.to.have.been.called;
+			});
+
+			it('should return `found`', () => {
+				let el = document.createElement('div');
+				let el2 = document.createElement('div');
+				el.addEventListener('foo', () => {});
+
+				expect(el.dispatchEvent(new document.defaultView.Event('foo'))).to.equal(true);
+				expect(el2.dispatchEvent(new document.defaultView.Event('foo'))).to.equal(false);
+			});
+
+			it('preventDefault() should set defaultPrevented', () => {
+				let event = new document.defaultView.Event('foo', { cancelable: true, bubbles: true });
+				let el = document.createElement('div');
+				let parent = document.createElement('div');
+				parent.appendChild(el);
+				let fn = spy(e => { e.preventDefault(); });
+				let parentFn = spy(e => { e.preventDefault(); });
+				el.addEventListener('foo', fn);
+				parent.addEventListener('foo', parentFn);
+
+				el.dispatchEvent(event);
+
+				expect(fn).to.have.been.calledOnce;
+				expect(parentFn).to.have.been.calledOnce;
+				expect(parentFn.firstCall.args[0]).to.have.property('defaultPrevented', true);
 			});
 		});
 	});

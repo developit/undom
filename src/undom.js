@@ -140,16 +140,19 @@ export default function undom() {
 			splice(this.__handlers[toLower(type)], handler, 0, true);
 		}
 		dispatchEvent(event) {
-			let t = event.currentTarget = this,
+			let t = event.target = this,
 				c = event.cancelable,
 				l, i;
 			do {
+				event.currentTarget = t;
 				l = t.__handlers && t.__handlers[toLower(event.type)];
 				if (l) for (i=l.length; i--; ) {
-					if ((l[i].call(t, event)===false || event._end) && c) break;
+					if ((l[i].call(t, event) === false || event._end) && c) {
+						event.defaultPrevented = true;
+					}
 				}
-			} while (event.bubbles && !(c && event._stop) && (event.target=t=t.parentNode));
-			return !event.defaultPrevented;
+			} while (event.bubbles && !(c && event._stop) && (t=t.parentNode));
+			return l!=null;
 		}
 	}
 
@@ -164,8 +167,8 @@ export default function undom() {
 	class Event {
 		constructor(type, opts) {
 			this.type = type;
-			this.bubbles = !!opts.bubbles;
-			this.cancelable = !!opts.cancelable;
+			this.bubbles = !!(opts && opts.bubbles);
+			this.cancelable = !!(opts && opts.cancelable);
 		}
 		stopPropagation() {
 			this._stop = true;
