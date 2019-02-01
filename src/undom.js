@@ -20,201 +20,190 @@ const NODE_TYPES = {
 */
 
 
-/** Create a minimally viable DOM Document
- *	@returns {Document} document
- */
-export default function undom() {
+function isElement(node) {
+	return node.nodeType===1;
+}
 
-	function isElement(node) {
-		return node.nodeType===1;
+class Node {
+	constructor(nodeType, nodeName) {
+		this.nodeType = nodeType;
+		this.nodeName = nodeName;
+		this.childNodes = [];
 	}
-
-	class Node {
-		constructor(nodeType, nodeName) {
-			this.nodeType = nodeType;
-			this.nodeName = nodeName;
-			this.childNodes = [];
-		}
-		get nextSibling() {
-			let p = this.parentNode;
-			if (p) return p.childNodes[findWhere(p.childNodes, this, true) + 1];
-		}
-		get previousSibling() {
-			let p = this.parentNode;
-			if (p) return p.childNodes[findWhere(p.childNodes, this, true) - 1];
-		}
-		get firstChild() {
-			return this.childNodes[0];
-		}
-		get lastChild() {
-			return this.childNodes[this.childNodes.length-1];
-		}
-		appendChild(child) {
-			this.insertBefore(child);
-			return child;
-		}
-		insertBefore(child, ref) {
-			child.remove();
-			child.parentNode = this;
-			!ref ? this.childNodes.push(child) : splice(this.childNodes, ref, child);
-			return child;
-		}
-		replaceChild(child, ref) {
-			if (ref.parentNode===this) {
-				this.insertBefore(child, ref);
-				ref.remove();
-				return ref;
-			}
-		}
-		removeChild(child) {
-			splice(this.childNodes, child);
-			return child;
-		}
-		remove() {
-			if (this.parentNode) this.parentNode.removeChild(this);
+	get nextSibling() {
+		let p = this.parentNode;
+		if (p) return p.childNodes[findWhere(p.childNodes, this, true) + 1];
+	}
+	get previousSibling() {
+		let p = this.parentNode;
+		if (p) return p.childNodes[findWhere(p.childNodes, this, true) - 1];
+	}
+	get firstChild() {
+		return this.childNodes[0];
+	}
+	get lastChild() {
+		return this.childNodes[this.childNodes.length-1];
+	}
+	appendChild(child) {
+		this.insertBefore(child);
+		return child;
+	}
+	insertBefore(child, ref) {
+		child.remove();
+		child.parentNode = this;
+		!ref ? this.childNodes.push(child) : splice(this.childNodes, ref, child);
+		return child;
+	}
+	replaceChild(child, ref) {
+		if (ref.parentNode===this) {
+			this.insertBefore(child, ref);
+			ref.remove();
+			return ref;
 		}
 	}
+	removeChild(child) {
+		splice(this.childNodes, child);
+		return child;
+	}
+	remove() {
+		if (this.parentNode) this.parentNode.removeChild(this);
+	}
+}
 
 
-	class Text extends Node {
-		constructor(text) {
-			super(3, '#text');					// TEXT_NODE
-			this.nodeValue = text;
-		}
-		set textContent(text) {
-			this.nodeValue = text;
-		}
-		get textContent() {
-			return this.nodeValue;
-		}
+class Text extends Node {
+	constructor(text) {
+		super(3, '#text');					// TEXT_NODE
+		this.nodeValue = text;
+	}
+	set textContent(text) {
+		this.nodeValue = text;
+	}
+	get textContent() {
+		return this.nodeValue;
+	}
+}
+
+
+class Element extends Node {
+	constructor(nodeType, nodeName) {
+		super(nodeType || 1, nodeName);		// ELEMENT_NODE
+		this.attributes = [];
+		this.__handlers = {};
+		this.style = {};
 	}
 
+	get className() { return this.getAttribute('class'); }
+	set className(val) { this.setAttribute('class', val); }
 
-	class Element extends Node {
-		constructor(nodeType, nodeName) {
-			super(nodeType || 1, nodeName);		// ELEMENT_NODE
-			this.attributes = [];
-			this.__handlers = {};
-			this.style = {};
-			Object.defineProperty(this, 'className', {
-				set: val => { this.setAttribute('class', val); },
-				get: () => this.getAttribute('class')
-			});
-			Object.defineProperty(this.style, 'cssText', {
-				set: val => { this.setAttribute('style', val); },
-				get: () => this.getAttribute('style')
-			});
-		}
+	get cssText() { return this.getAttribute('style'); }
+	set cssText(val) { this.setAttribute('style', val); }
 
-		get children() {
-			return this.childNodes.filter(isElement);
-		}
+	get children() {
+		return this.childNodes.filter(isElement);
+	}
 
-		setAttribute(key, value) {
-			this.setAttributeNS(null, key, value);
-		}
-		getAttribute(key) {
-			return this.getAttributeNS(null, key);
-		}
-		removeAttribute(key) {
-			this.removeAttributeNS(null, key);
-		}
+	setAttribute(key, value) {
+		this.setAttributeNS(null, key, value);
+	}
+	getAttribute(key) {
+		return this.getAttributeNS(null, key);
+	}
+	removeAttribute(key) {
+		this.removeAttributeNS(null, key);
+	}
 
-		setAttributeNS(ns, name, value) {
-			let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
-			if (!attr) this.attributes.push(attr = { ns, name });
-			attr.value = String(value);
-		}
-		getAttributeNS(ns, name) {
-			let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
-			return attr && attr.value;
-		}
-		removeAttributeNS(ns, name) {
-			splice(this.attributes, createAttributeFilter(ns, name));
-		}
+	setAttributeNS(ns, name, value) {
+		let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
+		if (!attr) this.attributes.push(attr = { ns, name });
+		attr.value = String(value);
+	}
+	getAttributeNS(ns, name) {
+		let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
+		return attr && attr.value;
+	}
+	removeAttributeNS(ns, name) {
+		splice(this.attributes, createAttributeFilter(ns, name));
+	}
 
-		addEventListener(type, handler) {
-			(this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
-		}
-		removeEventListener(type, handler) {
-			splice(this.__handlers[toLower(type)], handler, 0, true);
-		}
-		dispatchEvent(event) {
-			let t = event.target = this,
-				c = event.cancelable,
-				l, i;
-			do {
-				event.currentTarget = t;
-				l = t.__handlers && t.__handlers[toLower(event.type)];
-				if (l) for (i=l.length; i--; ) {
-					if ((l[i].call(t, event) === false || event._end) && c) {
-						event.defaultPrevented = true;
-					}
+	addEventListener(type, handler) {
+		(this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
+	}
+	removeEventListener(type, handler) {
+		splice(this.__handlers[toLower(type)], handler, 0, true);
+	}
+	dispatchEvent(event) {
+		let t = event.target = this,
+			c = event.cancelable,
+			l, i;
+		do {
+			event.currentTarget = t;
+			l = t.__handlers && t.__handlers[toLower(event.type)];
+			if (l) for (i=l.length; i--; ) {
+				if ((l[i].call(t, event) === false || event._end) && c) {
+					event.defaultPrevented = true;
 				}
-			} while (event.bubbles && !(c && event._stop) && (t=t.parentNode));
-			return l!=null;
-		}
+			}
+		} while (event.bubbles && !(c && event._stop) && (t=t.parentNode));
+		return l!=null;
+	}
+}
+
+
+class Document extends Element {
+	constructor() {
+		super(9, '#document');			// DOCUMENT_NODE
 	}
 
-
-	class Document extends Element {
-		constructor() {
-			super(9, '#document');			// DOCUMENT_NODE
-		}
-	}
-
-
-	class Event {
-		constructor(type, opts) {
-			this.type = type;
-			this.bubbles = !!(opts && opts.bubbles);
-			this.cancelable = !!(opts && opts.cancelable);
-		}
-		stopPropagation() {
-			this._stop = true;
-		}
-		stopImmediatePropagation() {
-			this._end = this._stop = true;
-		}
-		preventDefault() {
-			this.defaultPrevented = true;
-		}
-	}
-
-
-	function createElement(type) {
+	createElement(type) {
 		return new Element(null, String(type).toUpperCase());
 	}
 
-
-	function createElementNS(ns, type) {
-		let element = createElement(type);
+	createElementNS(ns, type) {
+		let element = this.createElement(type);
 		element.namespace = ns;
 		return element;
 	}
 
 
-	function createTextNode(text) {
+	createTextNode(text) {
 		return new Text(text);
 	}
+}
 
 
-	function createDocument() {
-		let document = new Document();
-		assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement:Element, Event });
-		assign(document, { createElement, createElementNS, createTextNode });
-		document.appendChild(
-			document.documentElement = createElement('html')
-		);
-		document.documentElement.appendChild(
-			document.head = createElement('head')
-		);
-		document.documentElement.appendChild(
-			document.body = createElement('body')
-		);
-		return document;
+class Event {
+	constructor(type, opts) {
+		this.type = type;
+		this.bubbles = !!(opts && opts.bubbles);
+		this.cancelable = !!(opts && opts.cancelable);
 	}
+	stopPropagation() {
+		this._stop = true;
+	}
+	stopImmediatePropagation() {
+		this._end = this._stop = true;
+	}
+	preventDefault() {
+		this.defaultPrevented = true;
+	}
+}
 
 
-	return createDocument();
+/** Create a minimally viable DOM Document
+ *	@returns {Document} document
+ */
+export default function createDocument() {
+	let document = new Document();
+	assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement:Element, Event });
+	document.appendChild(
+		document.documentElement = document.createElement('html')
+	);
+	document.documentElement.appendChild(
+		document.head = document.createElement('head')
+	);
+	document.documentElement.appendChild(
+		document.body = document.createElement('body')
+	);
+	return document;
 }
