@@ -117,10 +117,10 @@ describe('undom', () => {
 				expect(el.attributes).to.eql([]);
 
 				el.setAttribute('foo', 'bar');
-				expect(el.attributes, 'create').to.eql([{ name:'foo', value:'bar', ns:null }]);
+				expect(el.attributes, 'create').to.eql([{ name: 'foo', value: 'bar', ns: null }]);
 
 				el.setAttribute('foo', 'baz');
-				expect(el.attributes, 'update').to.eql([{ name:'foo', value:'baz', ns:null }]);
+				expect(el.attributes, 'update').to.eql([{ name: 'foo', value: 'baz', ns: null }]);
 			});
 
 			it('should stringify values', () => {
@@ -215,7 +215,7 @@ describe('undom', () => {
 
 		describe('#dispatchEvent()', () => {
 			it('should invoke matched listener', () => {
-				let event = { type:'foo', cancelable:true, bubbles:true };
+				let event = { type: 'foo', cancelable: true, bubbles: true };
 				let el = document.createElement('div');
 				let fn = spy();
 				let fn2 = spy();
@@ -228,7 +228,7 @@ describe('undom', () => {
 			});
 
 			it('should invoke multiple listeners', () => {
-				let event = { type:'foo', cancelable:true, bubbles:true };
+				let event = { type: 'foo', cancelable: true, bubbles: true };
 				let el = document.createElement('div');
 				let fn = spy();
 				el.addEventListener('foo', fn);
@@ -240,7 +240,7 @@ describe('undom', () => {
 			});
 
 			it('should bubble if enabled', () => {
-				let event = new document.defaultView.Event('foo', { cancelable:true, bubbles:true });
+				let event = new document.defaultView.Event('foo', { cancelable: true, bubbles: true });
 				let child = document.createElement('div');
 				let parent = document.createElement('div');
 				parent.appendChild(child);
@@ -252,13 +252,13 @@ describe('undom', () => {
 				expect(child.fn).to.have.been.calledOnce;
 				expect(parent.fn).to.have.been.calledOnce;
 
-				child.fn.reset();
-				parent.fn.reset();
+				child.fn.resetHistory();
+				parent.fn.resetHistory();
 				parent.dispatchEvent(event);
 				expect(child.fn).not.to.have.been.called;
 
-				child.fn.reset();
-				parent.fn.reset();
+				child.fn.resetHistory();
+				parent.fn.resetHistory();
 				event.bubbles = false;
 				child.addEventListener('foo', e => e._stop = true );
 				child.dispatchEvent(event);
