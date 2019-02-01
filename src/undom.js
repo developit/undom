@@ -19,6 +19,7 @@ const NODE_TYPES = {
 };
 */
 
+function createEnvironment() {
 
 function isElement(node) {
 	return node.nodeType===1;
@@ -194,7 +195,7 @@ class Event {
 /** Create a minimally viable DOM Document
  *	@returns {Document} document
  */
-export default function createDocument() {
+	function createDocument() {
 	let document = new Document();
 	assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement: Element, Event });
 	document.appendChild(
@@ -208,3 +209,9 @@ export default function createDocument() {
 	);
 	return document;
 }
+
+	createDocument.env = createEnvironment;
+	return createDocument;
+}
+
+export default createEnvironment();
