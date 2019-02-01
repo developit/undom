@@ -32,11 +32,11 @@ class Node {
 	}
 	get nextSibling() {
 		let p = this.parentNode;
-		if (p) return p.childNodes[findWhere(p.childNodes, this, true) + 1];
+		if (p) return p.childNodes[findWhere(p.childNodes, this, true, true) + 1];
 	}
 	get previousSibling() {
 		let p = this.parentNode;
-		if (p) return p.childNodes[findWhere(p.childNodes, this, true) - 1];
+		if (p) return p.childNodes[findWhere(p.childNodes, this, true, true) - 1];
 	}
 	get firstChild() {
 		return this.childNodes[0];
@@ -51,7 +51,8 @@ class Node {
 	insertBefore(child, ref) {
 		child.remove();
 		child.parentNode = this;
-		!ref ? this.childNodes.push(child) : splice(this.childNodes, ref, child);
+		if (ref) splice(this.childNodes, ref, child, true);
+		else this.childNodes.push(child);
 		return child;
 	}
 	replaceChild(child, ref) {
@@ -62,7 +63,7 @@ class Node {
 		}
 	}
 	removeChild(child) {
-		splice(this.childNodes, child);
+		splice(this.childNodes, child, false, true);
 		return child;
 	}
 	remove() {
@@ -114,23 +115,23 @@ class Element extends Node {
 	}
 
 	setAttributeNS(ns, name, value) {
-		let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
+		let attr = findWhere(this.attributes, createAttributeFilter(ns, name), false, false);
 		if (!attr) this.attributes.push(attr = { ns, name });
 		attr.value = String(value);
 	}
 	getAttributeNS(ns, name) {
-		let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
+		let attr = findWhere(this.attributes, createAttributeFilter(ns, name), false, false);
 		return attr && attr.value;
 	}
 	removeAttributeNS(ns, name) {
-		splice(this.attributes, createAttributeFilter(ns, name));
+		splice(this.attributes, createAttributeFilter(ns, name), false, false);
 	}
 
 	addEventListener(type, handler) {
 		(this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
 	}
 	removeEventListener(type, handler) {
-		splice(this.__handlers[toLower(type)], handler, 0, true);
+		splice(this.__handlers[toLower(type)], handler, false, true);
 	}
 	dispatchEvent(event) {
 		let t = event.target = this,
@@ -195,7 +196,7 @@ class Event {
  */
 export default function createDocument() {
 	let document = new Document();
-	assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement:Element, Event });
+	assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement: Element, Event });
 	document.appendChild(
 		document.documentElement = document.createElement('html')
 	);
