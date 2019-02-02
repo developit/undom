@@ -23,6 +23,9 @@ Undom aims to find a sweet spot between size/performance and utility. The goal i
 
 The intent to keep things as simple as possible means undom lacks some DOM features like HTML parsing & serialization, Web Components, etc. These features can be added through additional libraries.
 
+#### Looking to 1.0.0
+
+As of version 1.0.0, the DOM constructors and their prototypes will be shared for all instances of a document, as is the case with [JSDOM](https://github.com/jsdom/jsdom#shared-constructors-and-prototypes). Once merged, [PR #25](https://github.com/developit/undom/pull/25) will address this by adding an `undom.env()` function, which returns a fresh document factory with a new set of constructors & prototypes.
 
 ---
 
@@ -77,10 +80,14 @@ One task `undom` doesn't handle for you by default is HTML serialization.  A pro
 #### Small & in ES2015:
 
 ```js
-Element.prototype.toString = el => this.nodeType===3 ? enc(this.textContent) : (
-	'<'+this.nodeName.toLowerCase() + this.attributes.map(attr).join('') + '>' +
-	this.childNodes.map(serialize).join('') + '</'+this.nodeName.toLowerCase()+'>'
-);
+Element.prototype.toString = function() { return serialize(this); };
+
+function serialize(el) {
+  return el.nodeType==3 ? enc(el.data) : (
+    '<'+this.nodeName.toLowerCase() + this.attributes.map(attr).join('') + '>' +
+    this.childNodes.map(serialize).join('') + '</'+this.nodeName.toLowerCase()+'>'
+  );
+}
 let attr = a => ` ${a.name}="${enc(a.value)}"`;
 let enc = s => s.replace(/[&'"<>]/g, a => `&#${a};`);
 ```
