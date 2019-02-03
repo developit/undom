@@ -151,28 +151,6 @@ class Element extends Node {
 }
 
 
-class Document extends Element {
-	constructor() {
-		super(9, '#document');			// DOCUMENT_NODE
-	}
-
-	createElement(type) {
-		return new Element(null, String(type).toUpperCase());
-	}
-
-	createElementNS(ns, type) {
-		let element = this.createElement(type);
-		element.namespace = ns;
-		return element;
-	}
-
-
-	createTextNode(text) {
-		return new Text(text);
-	}
-}
-
-
 class Event {
 	constructor(type, opts) {
 		this.type = type;
@@ -191,12 +169,48 @@ class Event {
 }
 
 
+class Document extends Element {
+	constructor() {
+		super(9, '#document');			// DOCUMENT_NODE
+		this.defaultView = new DefaultView(this);
+	}
+
+	get document() {
+		return this;
+	}
+
+	createElement(type) {
+		return new Element(null, String(type).toUpperCase());
+	}
+
+	createElementNS(ns, type) {
+		let element = this.createElement(type);
+		element.namespace = ns;
+		return element;
+	}
+
+	createTextNode(text) {
+		return new Text(text);
+	}
+}
+
+assign(Document.prototype, { Document, Node, Text, Element, SVGElement: Element, Event });
+
+
+class DefaultView {
+	constructor(document) {
+		this.document = document;
+	}
+}
+
+assign(DefaultView.prototype, { Document, Node, Text, Element, SVGElement: Element, Event });
+
+
 /** Create a minimally viable DOM Document
  *	@returns {Document} document
  */
 export default function createDocument() {
 	let document = new Document();
-	assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement: Element, Event });
 	document.appendChild(
 		document.documentElement = document.createElement('html')
 	);
