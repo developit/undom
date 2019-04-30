@@ -33,6 +33,10 @@ describe('undom', () => {
 			expect(document.createElement('div')).to.be.an.instanceOf(document.Element);
 		});
 
+		it('should generate correct ownerDocument', () => {
+			expect(document.createElement('div')).to.have.property('ownerDocument', document);
+		});
+
 		it('should generate correct nodeNames', () => {
 			expect(document.createElement('div')).to.have.property('nodeName', 'DIV');
 			expect(document.createElement('section')).to.have.property('nodeName', 'SECTION');
@@ -50,6 +54,13 @@ describe('undom', () => {
 
 	describe('Element', () => {
 		let document = undom();
+
+		describe('tagName', () => {
+			it('should return the correct tagName', () => {
+				let element = document.createElement('div');
+				expect(element).to.have.property('tagName', 'DIV');
+			});
+		});
 
 		describe('#appendChild', () => {
 			it('should set parentNode', () => {
