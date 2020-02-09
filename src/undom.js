@@ -4,7 +4,7 @@ import {
 	splice,
 	findWhere,
 	createAttributeFilter
-} from './util';
+} from './util.js';
 
 /*
 const NODE_TYPES = {
