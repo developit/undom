@@ -26,10 +26,13 @@ function createEnvironment() {
 	}
 
 	class Node {
-		constructor(nodeType, nodeName) {
+		constructor(nodeType, localName) {
 			this.nodeType = nodeType;
-			this.nodeName = nodeName;
+			this.localName = localName;
 			this.childNodes = [];
+		}
+		get nodeName() {
+			return this.localName.toUpperCase();
 		}
 		get nextSibling() {
 			let p = this.parentNode;
@@ -76,20 +79,26 @@ function createEnvironment() {
 	class Text extends Node {
 		constructor(text) {
 			super(3, '#text');					// TEXT_NODE
-			this.nodeValue = text;
+			this.data = text;
 		}
-		set textContent(text) {
-			this.nodeValue = text;
+		get nodeValue() {
+			return this.data;
+		}
+		set nodeValue(text) {
+			this.data = text;
 		}
 		get textContent() {
-			return this.nodeValue;
+			return this.data;
+		}
+		set textContent(text) {
+			this.data = text;
 		}
 	}
 
 
 	class Element extends Node {
-		constructor(nodeType, nodeName) {
-			super(nodeType || 1, nodeName);		// ELEMENT_NODE
+		constructor(nodeType, localName) {
+			super(nodeType || 1, localName);		// ELEMENT_NODE
 			this.attributes = [];
 			this.__handlers = {};
 			this.style = {};
@@ -158,7 +167,7 @@ function createEnvironment() {
 		}
 
 		createElement(type) {
-			return new Element(null, String(type).toUpperCase());
+			return new Element(null, type);
 		}
 
 		createElementNS(ns, type) {
@@ -166,7 +175,6 @@ function createEnvironment() {
 			element.namespace = ns;
 			return element;
 		}
-
 
 		createTextNode(text) {
 			return new Text(text);
@@ -192,12 +200,13 @@ function createEnvironment() {
 	}
 
 
-	/** Create a minimally viable DOM Document
- *	@returns {Document} document
- */
+	/**
+	 * Create a minimally viable DOM Document
+	 * @returns {Document} document
+	 */
 	function createDocument() {
 		let document = new Document();
-		assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement: Element, Event });
+		document.defaultView = { document, Document, Node, Text, Element, SVGElement: Element, Event };
 		document.appendChild(
 			document.documentElement = document.createElement('html')
 		);
