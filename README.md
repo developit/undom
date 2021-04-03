@@ -83,13 +83,13 @@ One task `undom` doesn't handle for you by default is HTML serialization.  A pro
 Element.prototype.toString = function() { return serialize(this); };
 
 function serialize(el) {
-  return el.nodeType==3 ? enc(el.data) : (
+  return el.nodeType==3 ? enc(el.nodeValue) : (
     '<'+this.nodeName.toLowerCase() + this.attributes.map(attr).join('') + '>' +
     this.childNodes.map(serialize).join('') + '</'+this.nodeName.toLowerCase()+'>'
   );
 }
 let attr = a => ` ${a.name}="${enc(a.value)}"`;
-let enc = s => s.replace(/[&'"<>]/g, a => `&#${a};`);
+let enc = s => s.replace(/[&'"<>]/g, a => `&#${a.codePointAt(0)};`);
 ```
 
 
