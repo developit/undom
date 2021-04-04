@@ -95,6 +95,7 @@ function createEnvironment() {
 			this.style = {};
 		}
 
+		get tagName() { return this.nodeName; }
 		get className() { return this.getAttribute('class'); }
 		set className(val) { this.setAttribute('class', val); }
 
@@ -158,7 +159,9 @@ function createEnvironment() {
 		}
 
 		createElement(type) {
-			return new Element(null, String(type).toUpperCase());
+			let element = new Element(null, String(type).toUpperCase());
+			element.ownerDocument = this;
+			return element;
 		}
 
 		createElementNS(ns, type) {
