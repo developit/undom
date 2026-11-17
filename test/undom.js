@@ -48,6 +48,49 @@ describe('undom', () => {
 		});
 	});
 
+	describe('createDocumentFragment()', () => {
+		let document = undom();
+
+		it('should create a DocumentFragment', () => {
+			let fragment = document.createDocumentFragment();
+			expect(fragment).to.be.an.instanceOf(document.DocumentFragment);
+			expect(fragment).to.have.property('nodeType', 11);
+			expect(fragment).to.have.property('nodeName', '#document-fragment');
+			expect(fragment).to.have.property('childNodes').that.deep.equals([]);
+		});
+
+		it('should move its children when appended to an Element', () => {
+			let fragment = document.createDocumentFragment();
+			let child1 = document.createElement('span');
+			let child2 = document.createElement('span');
+			fragment.appendChild(child1);
+			fragment.appendChild(child2);
+
+			let parent = document.createElement('div');
+			parent.appendChild(fragment);
+
+			expect(parent).to.have.property('childNodes').that.deep.equals([child1, child2]);
+			expect(child1).to.have.property('parentNode', parent);
+			expect(child2).to.have.property('parentNode', parent);
+			expect(fragment).to.have.property('childNodes').that.deep.equals([]);
+		});
+
+		it('should insert its children before a reference node', () => {
+			let fragment = document.createDocumentFragment();
+			let child1 = document.createElement('span');
+			let child2 = document.createElement('span');
+			fragment.appendChild(child1);
+			fragment.appendChild(child2);
+
+			let parent = document.createElement('div');
+			let ref = document.createElement('b');
+			parent.appendChild(ref);
+			parent.insertBefore(fragment, ref);
+
+			expect(parent).to.have.property('childNodes').that.deep.equals([child1, child2, ref]);
+		});
+	});
+
 	describe('Element', () => {
 		let document = undom();
 
