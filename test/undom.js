@@ -147,6 +147,37 @@ describe('undom', () => {
 			});
 		});
 
+		describe('#hasAttribute()', () => {
+			it('should return false for a missing attribute', () => {
+				let el = document.createElement('div');
+				expect(el.hasAttribute('a')).to.equal(false);
+			});
+
+			it('should return true for a present attribute', () => {
+				let el = document.createElement('div');
+				el.setAttribute('a', 'b');
+				expect(el.hasAttribute('a')).to.equal(true);
+				el.removeAttribute('a');
+				expect(el.hasAttribute('a')).to.equal(false);
+			});
+
+			it('should return true for an attribute with an empty value', () => {
+				let el = document.createElement('div');
+				el.setAttribute('a', '');
+				expect(el.hasAttribute('a')).to.equal(true);
+			});
+		});
+
+		describe('#hasAttributeNS()', () => {
+			it('should return true only for a matching namespace and name', () => {
+				let el = document.createElement('div');
+				el.setAttributeNS('http://example.com/ns', 'x:a', 'b');
+				expect(el.hasAttributeNS('http://example.com/ns', 'x:a')).to.equal(true);
+				expect(el.hasAttributeNS('http://other.com/ns', 'x:a')).to.equal(false);
+				expect(el.hasAttributeNS(null, 'x:a')).to.equal(false);
+			});
+		});
+
 		describe('#addEventListener', () => {
 			it('should append listener to event list', () => {
 				let el = document.createElement('div');
