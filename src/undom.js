@@ -50,6 +50,13 @@ function createEnvironment() {
 			return child;
 		}
 		insertBefore(child, ref) {
+			if (child.nodeType===11) {
+				// Inserting a fragment moves its children, not the fragment itself.
+				child.remove();
+				let nodes = child.childNodes.slice();
+				for (let i=0; i<nodes.length; i++) this.insertBefore(nodes[i], ref);
+				return child;
+			}
 			child.remove();
 			child.parentNode = this;
 			if (ref) splice(this.childNodes, ref, child, true);
@@ -152,9 +159,20 @@ function createEnvironment() {
 	}
 
 
+	class DocumentFragment extends Node {
+		constructor() {
+			super(11, '#document-fragment');	// DOCUMENT_FRAGMENT_NODE
+		}
+	}
+
+
 	class Document extends Element {
 		constructor() {
 			super(9, '#document');			// DOCUMENT_NODE
+		}
+
+		createDocumentFragment() {
+			return new DocumentFragment();
 		}
 
 		createElement(type) {
@@ -197,7 +215,7 @@ function createEnvironment() {
  */
 	function createDocument() {
 		let document = new Document();
-		assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement: Element, Event });
+		assign(document, document.defaultView = { document, Document, Node, Text, Element, DocumentFragment, SVGElement: Element, Event });
 		document.appendChild(
 			document.documentElement = document.createElement('html')
 		);
