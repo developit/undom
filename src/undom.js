@@ -114,6 +114,9 @@ function createEnvironment() {
 		removeAttribute(key) {
 			this.removeAttributeNS(null, key);
 		}
+		hasAttribute(key) {
+			return this.hasAttributeNS(null, key);
+		}
 
 		setAttributeNS(ns, name, value) {
 			let attr = findWhere(this.attributes, createAttributeFilter(ns, name), false, false);
@@ -126,6 +129,9 @@ function createEnvironment() {
 		}
 		removeAttributeNS(ns, name) {
 			splice(this.attributes, createAttributeFilter(ns, name), false, false);
+		}
+		hasAttributeNS(ns, name) {
+			return !!findWhere(this.attributes, createAttributeFilter(ns, name), false, false);
 		}
 
 		addEventListener(type, handler) {
