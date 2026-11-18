@@ -92,7 +92,16 @@ function createEnvironment() {
 			super(nodeType || 1, nodeName);		// ELEMENT_NODE
 			this.attributes = [];
 			this.__handlers = {};
+			// `style` is a live view of the `style` attribute: reading
+			// `cssText` returns the attribute value as a string, and writing
+			// it stores the value as a regular attribute (#11).
 			this.style = {};
+			Object.defineProperty(this.style, 'cssText', {
+				enumerable: true,
+				configurable: true,
+				get: () => this.getAttribute('style') || '',
+				set: val => this.setAttribute('style', val)
+			});
 		}
 
 		get className() { return this.getAttribute('class'); }

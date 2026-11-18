@@ -147,6 +147,22 @@ describe('undom', () => {
 			});
 		});
 
+		describe('style', () => {
+			it('should return a string for style.cssText', () => {
+				let el = document.createElement('div');
+				expect(el.style.cssText).to.equal('');
+				el.setAttribute('style', 'color:red');
+				expect(el.style.cssText).to.equal('color:red');
+			});
+
+			it('should store style.cssText as a regular attribute', () => {
+				let el = document.createElement('div');
+				el.style.cssText = 'color:red';
+				expect(el.getAttribute('style')).to.equal('color:red');
+				expect(el.attributes).to.eql([{ name: 'style', value: 'color:red', ns: null }]);
+			});
+		});
+
 		describe('#addEventListener', () => {
 			it('should append listener to event list', () => {
 				let el = document.createElement('div');
