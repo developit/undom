@@ -25,6 +25,46 @@ function createEnvironment() {
 		return node.nodeType===1;
 	}
 
+	// Internal helpers that live off the classes (fixes #35): the public
+	// methods below delegate to these instead of calling each other, so
+	// spying on a public method only observes explicit calls — like the
+	// real DOM, which never calls its own public methods internally.
+	function insert(parent, child, ref) {
+		removeNode(child);
+		child.parentNode = parent;
+		if (ref) splice(parent.childNodes, ref, child, true);
+		else parent.childNodes.push(child);
+		return child;
+	}
+
+	function remove(parent, child) {
+		splice(parent.childNodes, child, false, true);
+		return child;
+	}
+
+	function removeNode(node) {
+		if (node.parentNode) remove(node.parentNode, node);
+	}
+
+	function setAttr(element, ns, name, value) {
+		let attr = findWhere(element.attributes, createAttributeFilter(ns, name), false, false);
+		if (!attr) element.attributes.push(attr = { ns, name });
+		attr.value = String(value);
+	}
+
+	function getAttr(element, ns, name) {
+		let attr = findWhere(element.attributes, createAttributeFilter(ns, name), false, false);
+		return attr && attr.value;
+	}
+
+	function removeAttr(element, ns, name) {
+		splice(element.attributes, createAttributeFilter(ns, name), false, false);
+	}
+
+	function newElement(type) {
+		return new Element(null, String(type).toUpperCase());
+	}
+
 	class Node {
 		constructor(nodeType, nodeName) {
 			this.nodeType = nodeType;
@@ -46,29 +86,23 @@ function createEnvironment() {
 			return this.childNodes[this.childNodes.length-1];
 		}
 		appendChild(child) {
-			this.insertBefore(child);
-			return child;
+			return insert(this, child);
 		}
 		insertBefore(child, ref) {
-			child.remove();
-			child.parentNode = this;
-			if (ref) splice(this.childNodes, ref, child, true);
-			else this.childNodes.push(child);
-			return child;
+			return insert(this, child, ref);
 		}
 		replaceChild(child, ref) {
 			if (ref.parentNode===this) {
-				this.insertBefore(child, ref);
-				ref.remove();
+				insert(this, child, ref);
+				remove(this, ref);
 				return ref;
 			}
 		}
 		removeChild(child) {
-			splice(this.childNodes, child, false, true);
-			return child;
+			return remove(this, child);
 		}
 		remove() {
-			if (this.parentNode) this.parentNode.removeChild(this);
+			removeNode(this);
 		}
 	}
 
@@ -106,26 +140,23 @@ function createEnvironment() {
 		}
 
 		setAttribute(key, value) {
-			this.setAttributeNS(null, key, value);
+			setAttr(this, null, key, value);
 		}
 		getAttribute(key) {
-			return this.getAttributeNS(null, key);
+			return getAttr(this, null, key);
 		}
 		removeAttribute(key) {
-			this.removeAttributeNS(null, key);
+			removeAttr(this, null, key);
 		}
 
 		setAttributeNS(ns, name, value) {
-			let attr = findWhere(this.attributes, createAttributeFilter(ns, name), false, false);
-			if (!attr) this.attributes.push(attr = { ns, name });
-			attr.value = String(value);
+			setAttr(this, ns, name, value);
 		}
 		getAttributeNS(ns, name) {
-			let attr = findWhere(this.attributes, createAttributeFilter(ns, name), false, false);
-			return attr && attr.value;
+			return getAttr(this, ns, name);
 		}
 		removeAttributeNS(ns, name) {
-			splice(this.attributes, createAttributeFilter(ns, name), false, false);
+			removeAttr(this, ns, name);
 		}
 
 		addEventListener(type, handler) {
@@ -158,11 +189,11 @@ function createEnvironment() {
 		}
 
 		createElement(type) {
-			return new Element(null, String(type).toUpperCase());
+			return newElement(type);
 		}
 
 		createElementNS(ns, type) {
-			let element = this.createElement(type);
+			let element = newElement(type);
 			element.namespace = ns;
 			return element;
 		}
@@ -198,13 +229,13 @@ function createEnvironment() {
 	function createDocument() {
 		let document = new Document();
 		assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement: Element, Event });
-		document.appendChild(
+		insert(document,
 			document.documentElement = document.createElement('html')
 		);
-		document.documentElement.appendChild(
+		insert(document.documentElement,
 			document.head = document.createElement('head')
 		);
-		document.documentElement.appendChild(
+		insert(document.documentElement,
 			document.body = document.createElement('body')
 		);
 		return document;
