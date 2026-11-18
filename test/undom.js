@@ -111,6 +111,69 @@ describe('undom', () => {
 			});
 		});
 
+		// Internal reuse of a public method makes spies over-count (#35):
+		// the real DOM never calls its own public methods internally.
+		describe('internal calls (fixes #35)', () => {
+			it('should not call public methods internally', () => {
+				let parent = document.createElement('div');
+				let child = document.createElement('span');
+				let other = document.createElement('span');
+				let parent2 = document.createElement('div');
+				// No public createDocumentFragment() on master yet (#29):
+				// build a fragment straight from the exposed Node class.
+				let fragment = new document.Node(11, '#document-fragment');
+				fragment.appendChild(document.createElement('span'));
+
+				let appendChild = spy(parent, 'appendChild');
+				let insertBefore = spy(parent, 'insertBefore');
+				let removeChild = spy(parent, 'removeChild');
+				let remove = spy(child, 'remove');
+
+				// appendChild() used to delegate to insertBefore()
+				parent.appendChild(child);
+				expect(insertBefore).to.not.have.been.called;
+
+				// remove() used to delegate to parent.removeChild()
+				child.remove();
+				expect(remove.callCount).to.equal(1);
+				expect(removeChild).to.not.have.been.called;
+
+				// moving a child used to detach it via remove()
+				parent.appendChild(child);
+				parent2.appendChild(child);
+				expect(remove.callCount).to.equal(1);
+
+				// replaceChild() used to delegate to insertBefore() + remove()
+				parent.appendChild(child);
+				parent.replaceChild(other, child);
+				expect(insertBefore).to.not.have.been.called;
+				expect(removeChild).to.not.have.been.called;
+
+				// appending any node (here a fragment node) used to route via insertBefore()
+				parent.appendChild(fragment);
+				expect(insertBefore).to.not.have.been.called;
+
+				// ...but an explicit public call is still counted exactly once
+				expect(appendChild.callCount).to.equal(4);
+				parent.removeChild(other);
+				expect(removeChild.callCount).to.equal(1);
+			});
+
+			it('should not call public attribute methods internally', () => {
+				let el = document.createElement('div');
+				let setAttributeNS = spy(el, 'setAttributeNS');
+				let getAttributeNS = spy(el, 'getAttributeNS');
+
+				el.setAttribute('foo', 'bar');
+				expect(setAttributeNS).to.not.have.been.called;
+				expect(el.getAttribute('foo')).to.equal('bar');
+				expect(getAttributeNS).to.not.have.been.called;
+
+				el.setAttributeNS(null, 'foo', 'baz');
+				expect(setAttributeNS.callCount).to.equal(1);
+			});
+		});
+
 		describe('#setAttribute()', () => {
 			it('should set a given named attribute', () => {
 				let el = document.createElement('div');
